@@ -17,6 +17,7 @@ public class CspGenerator{
 	private Integer gameTick;
 	private Integer lifeNum;
 	private String missType;
+	private String missTrigger;
 	private Integer[] missAvaLoc;
 	private Integer[] missAniNum;
 	private Integer[] missAniSeq;
@@ -100,12 +101,13 @@ public class CspGenerator{
 
 	//function to parse missStr 
 	//to do: check compatibility of missMap, avatarLoc array and aniStep array
-	public void setMiss(String missType, String missStr){
+	public void setMiss(String missType, String, missTrigger, String missStr){
 		String[] missArr = missStr.split(";");
 		missAvaLoc = new Integer[missArr.length];
 		missAniNum = new Integer[missArr.length];
 		missAniSeq = new Integer[missArr.length];
 		this.missType = missType;
+		this.missTrigger = missTrigger;
 		for(int i = 0; i!= missArr.length; i++){
 			String[] missParas = missArr[i].split(",");
 			missAvaLoc[i] = Integer.parseInt(missParas[0]);
@@ -140,9 +142,12 @@ public class CspGenerator{
 		cspStr += "var Gametick : [ 0, "+(this.gameTick-1)+" ];\n";
 		cspStr += "var GameOver : [ 0, 1 ];\n";
 		cspStr += "var Level : [ 0, "+this.levelScore.length+" ];\n";
+		cspStr += "var Random : [ 0, 1 ];\n";
+
 
 		cspStr += "\n";
 		//Avatar Location variables
+		cspStr += "var Avatar : [ 0, "+(avaInitLoc.length-1)+" ];\n";
 		for(int i=0;i<avaInitLoc.length;i++){
 			cspStr += "var Ava"+i+" : [ 0, 1 ];\n";
 		}
@@ -152,10 +157,10 @@ public class CspGenerator{
 		//for trace or not, different mechnism is applied
 		for(int i=0;i<aniStep.length;i++){
 			if(aniTrace[i] == 0){
-				cspStr += "var Ani"+i+" : [ 0, 1 ];\n";
+				cspStr += "var Ani"+i+" : [ 0, "+(aniStep[i]-1)+" ];\n";
 			}
 			else{
-				cspStr += "var Ani"+i+" : [ 0, "+(aniStep[i]*2)+" ];\n";
+				cspStr += "var Ani"+i+" : [ 0, "+(aniStep[i]*2-1)+" ];\n";
 			}
 			for(int j=0;j<aniStep[i];j++){
 				cspStr += "var Ani"+i+"Seq"+j+" : [ 0, 1 ];\n";
@@ -164,6 +169,7 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//Miss location variables
+		cspStr += "var Miss : [ 0, 1 ];\n";
 		for(int i=0; i!=missAvaLoc.length;i++){
 			cspStr += "var MissLoc"+i+" : [ 0, 1 ];\n";
 		}
@@ -184,17 +190,21 @@ public class CspGenerator{
 
 		cspStr += "\n";
 		//Avatar Location variables
-		for(int i=0;i<avaInitLoc.length;i++){
-			cspStr += "first Ava"+i+" == "+avaInitLoc[i]+";\n";
-		}
+		cspStr += "first Avatar == 0";
+		// for(int i=0;i<avaInitLoc.length;i++){
+		// 	cspStr += "first Ava"+i+" == "+avaInitLoc[i]+";\n";
+		// }
 
 		//Game animation variables
-		for(int i=0;i<aniStep.length;i++){
+		for(int i=0; i!=aniStep.length; i++){
 			cspStr += "first Ani"+i+" == 0;\n";
-			for(int j=0;j<aniStep[i];j++){
-				cspStr += "first Ani"+i+"Seq"+j+" == 0;\n";
-			}
 		}
+		// for(int i=0;i<aniStep.length;i++){
+		// 	cspStr += "first Ani"+i+" == 0;\n";
+		// 	for(int j=0;j<aniStep[i];j++){
+		// 		cspStr += "first Ani"+i+"Seq"+j+" == 0;\n";
+		// 	}
+		// }
 
 		//Game miss variables
 		for(int i=0; i!=missAvaLoc.length;i++){
@@ -233,34 +243,37 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//Avatar Location constraint
-		if(this.controlType == "1-1 location"){
-			for( int i=0; i != this.inputKey.length; i++ ){
-				cspStr += "next Ava"+i+" == if Input eq "+i+" then 1 else 0;\n";
-			}
+		for( int i=0; i != this.inputKey.length; i++ ){
+			cspStr += "Ava"+i+" == Avatar eq "+i+";\n";
 		}
-		else if( this.controlType == "1-1 step"){
-			//0 for no input and 1 input for left and 2 input for right
-			cspStr += "next Ava0 == if Input eq 0 then Ava0 else if Input eq 2 then 0 else if Ava0 eq 1 then Ava0 else Ava1;\n";
-			for( int i=1; i != this.avaInitLoc.length-1; i++ ){
-				cspStr += "next Ava"+i+" == if Input eq 0 then Ava"+i+" else if Input eq 1 then Ava"+(i-1)+" else Ava"+(i+1)+";\n";
-			}
-			int lastAva = this.avaInitLoc.length-1;
-			cspStr += "next Ava"+lastAva+" == if Input eq 0 then Ava"+lastAva+" else if Input eq 1 then 0 else if Ava"+lastAva+" eq 1 then Ava"+lastAva+" else Ava"+(lastAva-1)+";\n";
-		}
+		// if(this.controlType == "1-1 location"){
+		// 	for( int i=0; i != this.inputKey.length; i++ ){
+		// 		cspStr += "Ava"+i+" == Avatar eq "+i+";\n";
+		// 	}
+		// }
+		// else if( this.controlType == "1-1 step"){
+		// 	//0 for no input and 1 input for left and 2 input for right
+		// 	cspStr += "next Ava0 == if Input eq 0 then Ava0 else if Input eq 2 then 0 else if Ava0 eq 1 then Ava0 else Ava1;\n";
+		// 	for( int i=1; i != this.avaInitLoc.length-1; i++ ){
+		// 		cspStr += "next Ava"+i+" == if Input eq 0 then Ava"+i+" else if Input eq 1 then Ava"+(i-1)+" else Ava"+(i+1)+";\n";
+		// 	}
+		// 	int lastAva = this.avaInitLoc.length-1;
+		// 	cspStr += "next Ava"+lastAva+" == if Input eq 0 then Ava"+lastAva+" else if Input eq 1 then 0 else if Ava"+lastAva+" eq 1 then Ava"+lastAva+" else Ava"+(lastAva-1)+";\n";
+		// }
 		cspStr += "\n";
 
 		//Animation constraint
 		for(int i=0; i!= aniTrace.length; i++){
 			if(aniTrace[i] == 0){
-				cspStr += "next Ani"+i+"Seq0 == if Gametick eq 0 then Ani"+i+" else Ani0Seq0;\n";
-				for(int j=1; j!= aniStep[i]; j++){
-					cspStr += "next Ani"+i+"Seq"+j+" == if Gametick eq 0 then Ani"+i+"Seq"+(j-1)+" else Ani"+i+"Seq"+j+";\n";
+				// cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+aniStep[i]+";\n";
+				for(int j=0; j!= aniStep[i]; j++){
+					cspStr += "Ani"+i+"Seq"+j+" == ( Ani"+i+" eq "+j+" );\n";
 				}
 			}
 			if(aniTrace[i] == 1){
-				cspStr += "next Ani"+i+" == if Gametick eq 0 then (Ani"+i+"+1)%"+(aniStep[i]*2)+";\n";
+				// cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+(aniStep[i]*2)+" else Ani"+i+";\n";
 				for(int j=0; j != aniStep[i]; j++){
-					cspStr += "next Ani"+i+"Seq"+j+" == if Gametick ne 0 then Ani"+i+"Seq"+j+" else if (Ani"+i+" ge "+(j+1)+") and (Ani"+i+" le "+(aniStep[i]-1-j)+") then 1 else 0;\n";
+					cspStr += "Ani"+i+"Seq"+j+" == (Ani"+i+" ge "+(j+1)+") and (Ani"+i+" le "+(aniStep[i]-1-j)+");\n";
 				}
 			}
 		}
@@ -291,10 +304,45 @@ public class CspGenerator{
 				}
 			}
 		}
+		for(int i=0; i != missAvaLoc.length; i++){
+			cspStr += "MissLoc"+i;
+			if(i != missAvaLoc.length-1){
+				cspStr += " or ";
+			}
+			else{
+				cspStr += ";\n";
+			}
+		}
+		cspStr += "\n";
+
+		//setting avatar variable
+		cspStr += "Avatar == ";
+		if(this.missTrigger == "Reset Avatar"){
+			cspStr += "if Miss eq 1 then 0 else ";
+		}
+		//to do: add avatar logic
+		
+
+		//setting animation variable
+		for(int i=0; i!= aniStep.length;i++){
+			cspStr += "Ani"+i+" == ";
+			if(this.missTrigger == "Reset Animation" && Arrays.asList(missAniNum).contains(i)){
+				List<String> missLocStr = new LinkedList<String>();
+				for( int j=0; j!= missAniNum.length; j++){
+					if(i == missAniNum[j]){
+						missLocStr.add("MissLoc"+j);
+					}
+				}
+				cspStr += "if "+String.join(" or ", missLocStr) + " then 0 else ";
+			}
+		}
+		//to do: add animation logic
+
 		cspStr += "\n";
 
 		//score constraint
-		//to do: for avatar location, if avatar location not change then score would always be 1
+		//bug: for avatar location, if avatar location not change then score would always be 1
+		//to do: sequences of avatar location for scoring
 		if(this.scoreType == "Avatar Location"){
 			cspStr += "Score == (Ava"+this.scoreLoc+" eq 1) and (Gametick eq 0);\n";
 		}
