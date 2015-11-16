@@ -316,16 +316,23 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//setting avatar variable
-		cspStr += "Avatar == ";
+		cspStr += "next Avatar == ";
 		if(this.missTrigger == "Reset Avatar"){
-			cspStr += "if Miss eq 1 then 0 else ";
+			cspStr += "if Miss eq 1 and Gametick eq 0 then 0 else ";
 		}
-		//to do: add avatar logic
+		if(this.controlType == "1-1 location"){
+			cspStr += "Input;\n";
+		}
+		else if( this.controlType == "1-1 step"){
+			//0 for no input and 1 input for left and 2 input for right
+			int lastAva = this.avaInitLoc.length-1;
+			cspStr += "if Input eq 0 then Avatar else if Input eq 1 and Avatar eq 0 then 0 else if Input eq 2 and Avatar eq "+lastAva+" then "+lastAva+" else if Input eq 1 then (Avatar - 1) else (Avatar + 1);\n"
+		}
 		
 
 		//setting animation variable
 		for(int i=0; i!= aniStep.length;i++){
-			cspStr += "Ani"+i+" == ";
+			cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else ";
 			if(this.missTrigger == "Reset Animation" && Arrays.asList(missAniNum).contains(i)){
 				List<String> missLocStr = new LinkedList<String>();
 				for( int j=0; j!= missAniNum.length; j++){
@@ -333,10 +340,17 @@ public class CspGenerator{
 						missLocStr.add("MissLoc"+j);
 					}
 				}
-				cspStr += "if "+String.join(" or ", missLocStr) + " then 0 else ";
+				cspStr += "if ("+String.join(" or ", missLocStr) + ") then 0 else ";
+			}
+
+			if(aniTrace[i] == 0){
+				cspStr += "if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+aniStep[i]+";\n";
+			}
+			else{
+				cspStr += "if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+(aniStep[i]*2)+";\n";
 			}
 		}
-		//to do: add animation logic
+
 
 		cspStr += "\n";
 
