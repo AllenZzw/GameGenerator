@@ -22,6 +22,7 @@ public class GameInterface extends JFrame {
 	private JLabel[] avaDisplay;
 	private JLabel[][] aniDisplay;
 	private JLabel[] missDisplay;
+	private int[] missAniStep;
 
 	private GameInput controller;
 
@@ -53,8 +54,6 @@ public class GameInterface extends JFrame {
 	//for now we only hava background, avatar location and game animation
 	//need to improved later by adding more images
 	private void loadImages(String imgPath){
-		windowWidth = imgBackground.getImage().getWidth(null);
-		windowHeight = imgBackground.getImage().getHeight(null);
 		for( int i = 0; i != imgAvaLocation.length; i++ ){
 			imgAvaLocation[i] = new ImageIcon(getClass().getResource(imgPath+"AvaLoc"+i+".png"));
 		}
@@ -67,7 +66,9 @@ public class GameInterface extends JFrame {
 			imgMiss[i] = new ImageIcon(getClass().getResource(imgPath+"Miss"+i+".png"));
 		}
 		imgBlank = new ImageIcon(getClass().getResource(imgPath + "blank.png"));
-		imgBackground = new ImageIcon(getClass().getResource(imgPath + "Background.png"));	
+		imgBackground = new ImageIcon(getClass().getResource(imgPath + "Background.png"));
+		windowWidth = imgBackground.getImage().getWidth(null);
+		windowHeight = imgBackground.getImage().getHeight(null);	
 	}
 
 	//function to initialize the layout by setting position of different images and buttons
@@ -102,8 +103,9 @@ public class GameInterface extends JFrame {
 		missDisplay = new JLabel[imgMiss.length];
 		for(int i=0; i!=imgMiss.length; i++){
 			missDisplay[i] = new JLabel(imgMiss[i]);
-			displayPanel.add(missDisplay[i]);
+			displayPanel.add(missDisplay[i],position);
 		}
+		missAniStep = new int[imgMiss.length];
 
 		bgDisplay = new JLabel(imgBackground);
 		displayPanel.add(bgDisplay, position);
@@ -115,11 +117,12 @@ public class GameInterface extends JFrame {
 	}
 
 	//function to accept stream value from automaton to update display
-	public void updateDisplay(Hashtable<String, Integer> currentVarMap){
+	public void updateDisplay(Hashtable<String, Integer> currentVarMap, boolean gameover){
+		//to do: update life, score, gameover, level
 		//update avatar location
 		for(int i = 0; i != avaDisplay.length; i++ ){
 			String varName = new String("Ava"+i);
-			if(currentVarMap.get(varName) == 0)
+			if(currentVarMap.get(varName) == 0 || gameover)
 				avaDisplay[i].setIcon(imgBlank);
 			else
 				avaDisplay[i].setIcon(imgAvaLocation[i]);
@@ -130,7 +133,7 @@ public class GameInterface extends JFrame {
 			for(int i = 0; i != aniDisplay.length; i++ ){
 				for(int j = 0; j != aniDisplay[i].length; j++ ){
 					String varName = new String("Ani"+i+"Seq"+j);
-					if(currentVarMap.get(varName) == 0)
+					if(currentVarMap.get(varName) == 0 || gameover)
 						aniDisplay[i][j].setIcon(imgBlank);
 					else{
 						aniDisplay[i][j].setIcon(imgAnimation[i][j]);
@@ -140,14 +143,20 @@ public class GameInterface extends JFrame {
 		}
 
 		//update miss animation
-		if(currentVarMap.get("Gametick")==0){
-			for(int i = 0; i != missDisplay.length; i++){
-				String varName = new String("MissLoc"+i);
-				if(currentVarMap.get(varName) == 0){
-					missDisplay[i].setIcon(imgBlank);
+		//intuition: since the miss animation is not related to game engine
+		//			 so if would be set to display for some steps
+		if(currentVarMap.get("Gametick") == 0){
+			for(int i=0; i != missDisplay.length; i++){
+				if(missAniStep[i] > 0){
+					missDisplay[i].setIcon(imgMiss[i]);
+					missAniStep[i]--;
 				}
 				else{
-					missDisplay[i].setIcon(imgMiss[i]);
+					missDisplay[i].setIcon(imgBlank);
+				}
+				String varName = new String("MissLoc"+i);
+				if(currentVarMap.get(varName) == 1 && !gameover){
+					missAniStep[i] = 1;
 				}
 			}
 		}

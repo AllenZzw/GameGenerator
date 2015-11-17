@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.String;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 public class CspGenerator{
 	private String gameName;
@@ -101,7 +102,7 @@ public class CspGenerator{
 
 	//function to parse missStr 
 	//to do: check compatibility of missMap, avatarLoc array and aniStep array
-	public void setMiss(String missType, String, missTrigger, String missStr){
+	public void setMiss(String missType, String missTrigger, String missStr){
 		String[] missArr = missStr.split(";");
 		missAvaLoc = new Integer[missArr.length];
 		missAniNum = new Integer[missArr.length];
@@ -157,7 +158,7 @@ public class CspGenerator{
 		//for trace or not, different mechnism is applied
 		for(int i=0;i<aniStep.length;i++){
 			if(aniTrace[i] == 0){
-				cspStr += "var Ani"+i+" : [ 0, "+(aniStep[i]-1)+" ];\n";
+				cspStr += "var Ani"+i+" : [ 0 , "+aniStep[i]+" ];\n";
 			}
 			else{
 				cspStr += "var Ani"+i+" : [ 0, "+(aniStep[i]*2-1)+" ];\n";
@@ -190,21 +191,12 @@ public class CspGenerator{
 
 		cspStr += "\n";
 		//Avatar Location variables
-		cspStr += "first Avatar == 0";
-		// for(int i=0;i<avaInitLoc.length;i++){
-		// 	cspStr += "first Ava"+i+" == "+avaInitLoc[i]+";\n";
-		// }
+		cspStr += "first Avatar == 0;\n";
 
 		//Game animation variables
 		for(int i=0; i!=aniStep.length; i++){
 			cspStr += "first Ani"+i+" == 0;\n";
 		}
-		// for(int i=0;i<aniStep.length;i++){
-		// 	cspStr += "first Ani"+i+" == 0;\n";
-		// 	for(int j=0;j<aniStep[i];j++){
-		// 		cspStr += "first Ani"+i+"Seq"+j+" == 0;\n";
-		// 	}
-		// }
 
 		//Game miss variables
 		for(int i=0; i!=missAvaLoc.length;i++){
@@ -218,60 +210,27 @@ public class CspGenerator{
 		//Game General constraint
 		cspStr += "GameOver == Life eq 0;\n";
 		cspStr += "next Gametick == (Gametick+1)%("+this.gameTick+"-Level);\n";
-		cspStr += "next Life == if Life eq 0 then 0 else if (";
-		for( int i=0; i!= missAvaLoc.length; i++){
-			cspStr += "MissLoc"+i;
-			if(i != missAvaLoc.length-1){
-				cspStr += " or ";
-			}
-			else{
-				cspStr += ") and ";
-			}
-
-		}
-		cspStr += "(Gametick eq 0) then (Life-1) else Life;\n";
+		cspStr += "next Life == if Life eq 0 then 0 else if (Miss eq 1) and (Gametick eq 0) then (Life-1) else Life;\n";
 
 		//Level setting
 		//todo: setting different level
 		cspStr += "Level == 0;\n";
-		// for(int i=this.levelScore.length; i>0; i--){
-		// 	cspStr += "if Score ge "+this.levelScore[i-1]+" then "+i+" else ";
-		// 	if( i == 1 ){
-		// 		cspStr += "0;";
-		// 	}
-		// }
 		cspStr += "\n";
 
 		//Avatar Location constraint
-		for( int i=0; i != this.inputKey.length; i++ ){
+		for( int i=0; i != this.avaInitLoc.length; i++ ){
 			cspStr += "Ava"+i+" == Avatar eq "+i+";\n";
 		}
-		// if(this.controlType == "1-1 location"){
-		// 	for( int i=0; i != this.inputKey.length; i++ ){
-		// 		cspStr += "Ava"+i+" == Avatar eq "+i+";\n";
-		// 	}
-		// }
-		// else if( this.controlType == "1-1 step"){
-		// 	//0 for no input and 1 input for left and 2 input for right
-		// 	cspStr += "next Ava0 == if Input eq 0 then Ava0 else if Input eq 2 then 0 else if Ava0 eq 1 then Ava0 else Ava1;\n";
-		// 	for( int i=1; i != this.avaInitLoc.length-1; i++ ){
-		// 		cspStr += "next Ava"+i+" == if Input eq 0 then Ava"+i+" else if Input eq 1 then Ava"+(i-1)+" else Ava"+(i+1)+";\n";
-		// 	}
-		// 	int lastAva = this.avaInitLoc.length-1;
-		// 	cspStr += "next Ava"+lastAva+" == if Input eq 0 then Ava"+lastAva+" else if Input eq 1 then 0 else if Ava"+lastAva+" eq 1 then Ava"+lastAva+" else Ava"+(lastAva-1)+";\n";
-		// }
 		cspStr += "\n";
 
 		//Animation constraint
 		for(int i=0; i!= aniTrace.length; i++){
 			if(aniTrace[i] == 0){
-				// cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+aniStep[i]+";\n";
 				for(int j=0; j!= aniStep[i]; j++){
-					cspStr += "Ani"+i+"Seq"+j+" == ( Ani"+i+" eq "+j+" );\n";
+					cspStr += "Ani"+i+"Seq"+j+" == ( Ani"+i+" eq "+(j+1)+" );\n";
 				}
 			}
 			if(aniTrace[i] == 1){
-				// cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+(aniStep[i]*2)+" else Ani"+i+";\n";
 				for(int j=0; j != aniStep[i]; j++){
 					cspStr += "Ani"+i+"Seq"+j+" == (Ani"+i+" ge "+(j+1)+") and (Ani"+i+" le "+(aniStep[i]-1-j)+");\n";
 				}
@@ -280,15 +239,20 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//miss constraint
+		cspStr += "Miss == ";
+		String[] missStr = new String[missAvaLoc.length];
+		for(int i=0; i!= missAvaLoc.length; i++){
+			missStr[i] = "MissLoc"+i;
+		}
+		cspStr += String.join(" or ", missStr)+";\n";
 		if(this.missType == "positive"){
 			for(int i=0; i!= missAvaLoc.length; i++){
-				cspStr += "MissLoc"+i+" == if Gametick eq ("+(gameTick-1)+"-Level) then ( (Ava"+missAvaLoc[i]+" eq 1) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1) );\n";
+				cspStr += "MissLoc"+i+" == (Gametick eq 0) and (Ava"+missAvaLoc[i]+" eq 1) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1);\n";
 			}
 		}
 		if(this.missType == "negative"){
 			for(int i=0; i!= missAvaLoc.length; i++){
-				cspStr += "MissLoc"+i+" == if Gametick eq ("+(gameTick-1)+"-Level) then ( (Ava"+missAvaLoc[i]+" eq 0) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1) ) else 0;\n";
-				cspStr += "next Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" == if Gametick eq ("+(gameTick-1)+"-Level) and MissLoc"+i+" eq 1 then 0 else Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+";\n";
+				cspStr += "MissLoc"+i+" == (Gametick eq 0) and (Ava"+missAvaLoc[i]+" eq 0) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1);\n";
 			}
 			for(int i=0; i!= aniStep.length; i++){
 				if ( Arrays.asList(missAniNum).contains(i)){
@@ -304,21 +268,12 @@ public class CspGenerator{
 				}
 			}
 		}
-		for(int i=0; i != missAvaLoc.length; i++){
-			cspStr += "MissLoc"+i;
-			if(i != missAvaLoc.length-1){
-				cspStr += " or ";
-			}
-			else{
-				cspStr += ";\n";
-			}
-		}
 		cspStr += "\n";
 
 		//setting avatar variable
 		cspStr += "next Avatar == ";
 		if(this.missTrigger == "Reset Avatar"){
-			cspStr += "if Miss eq 1 and Gametick eq 0 then 0 else ";
+			cspStr += "if Miss eq 1 then 0 else ";
 		}
 		if(this.controlType == "1-1 location"){
 			cspStr += "Input;\n";
@@ -326,7 +281,7 @@ public class CspGenerator{
 		else if( this.controlType == "1-1 step"){
 			//0 for no input and 1 input for left and 2 input for right
 			int lastAva = this.avaInitLoc.length-1;
-			cspStr += "if Input eq 0 then Avatar else if Input eq 1 and Avatar eq 0 then 0 else if Input eq 2 and Avatar eq "+lastAva+" then "+lastAva+" else if Input eq 1 then (Avatar - 1) else (Avatar + 1);\n"
+			cspStr += "if Input eq 0 then Avatar else if Input eq 1 and Avatar eq 0 then 0 else if Input eq 2 and Avatar eq "+lastAva+" then "+lastAva+" else if Input eq 1 then (Avatar - 1) else (Avatar + 1);\n";
 		}
 		
 
@@ -334,7 +289,7 @@ public class CspGenerator{
 		for(int i=0; i!= aniStep.length;i++){
 			cspStr += "next Ani"+i+" == if Gametick ne 0 then Ani"+i+" else ";
 			if(this.missTrigger == "Reset Animation" && Arrays.asList(missAniNum).contains(i)){
-				List<String> missLocStr = new LinkedList<String>();
+				LinkedList<String> missLocStr = new LinkedList<String>();
 				for( int j=0; j!= missAniNum.length; j++){
 					if(i == missAniNum[j]){
 						missLocStr.add("MissLoc"+j);
@@ -344,14 +299,12 @@ public class CspGenerator{
 			}
 
 			if(aniTrace[i] == 0){
-				cspStr += "if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+aniStep[i]+";\n";
+				cspStr += "if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+(aniStep[i]+1)+";\n";
 			}
 			else{
 				cspStr += "if Ani"+i+" eq 0 then Random else (Ani"+i+"+1)%"+(aniStep[i]*2)+";\n";
 			}
 		}
-
-
 		cspStr += "\n";
 
 		//score constraint
@@ -361,7 +314,7 @@ public class CspGenerator{
 			cspStr += "Score == (Ava"+this.scoreLoc+" eq 1) and (Gametick eq 0);\n";
 		}
 		if(this.scoreType == "Not Miss"){
-			cspStr += "Score == ";
+			cspStr += "Score == if Gametick ne 0 then 0 else ";
 			if(this.missType == "positive"){
 				for(int i=0; i!= missAvaLoc.length; i++){
 					cspStr += "( (Ava"+missAvaLoc[i]+" eq 0) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1) )";

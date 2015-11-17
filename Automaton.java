@@ -108,6 +108,8 @@ public class Automaton {
 	//false means step fail since there is no edge from current node to aim node
 	//success means current node has change to aim node
 	public boolean nextStep(){
+		//if game is over, then no display update
+		
 		Vector<Edge> allowEdges = new Vector<Edge>();
 		for (Edge edge : this.current.outEdges() ){
 			if (edge.getVar("Input") == this.input){
@@ -126,9 +128,13 @@ public class Automaton {
 		//for one key one step, input need reset
 		//for one key one location, input remains unless changes
 		//this.input = 0;
-
-		view.updateDisplay(currentVarMap);
-
+		if(this.currentVarMap.get("GameOver") == 1){
+			view.updateDisplay(currentVarMap, true);
+		}
+		else{
+			view.updateDisplay(currentVarMap, false);
+		}
+		
 		return true;
 	}
 

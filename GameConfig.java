@@ -262,7 +262,7 @@ public class GameConfig extends JFrame {
         cspGen.setLevel(levelField.getText());
         cspGen.setGameTick(tickField.getText());
         cspGen.setLife(lifeField.getText());
-        cspGen.setMiss((String)missTypeCombo.getSelectedItem(),missField.getText());
+        cspGen.setMiss((String)missTypeCombo.getSelectedItem(),(String)missTriggerCombo.getSelectedItem(),missField.getText());
         cspGen.setScore((String)scoreCombo.getSelectedItem(),scoreField.getText());
         cspGen.generateCsp();
     }

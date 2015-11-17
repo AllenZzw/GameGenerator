@@ -53,6 +53,8 @@ public class GameInput extends JPanel{
         }
         @Override
         public void keyPressed(KeyEvent e) {
+            //set default input as 0
+            model.setInput(0);
             for(int i=0; i!=inputKey.length; i++){
                 if( e.getKeyCode() == inputKey[i] ){
                     model.setInput(i);
