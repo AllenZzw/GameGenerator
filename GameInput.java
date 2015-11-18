@@ -18,6 +18,8 @@ public class GameInput extends JPanel{
 	private long ticktime;
 	private Timer timer;
 
+    
+    private String[] keyStr;
 
 	//class initialize method
 	public GameInput(String inputStr){
@@ -25,7 +27,8 @@ public class GameInput extends JPanel{
 		ticktime = 200;
 
 		//add keylistener 
-		KeyListener listener = new keyboardListener(inputStr);
+        keyStr = inputStr.split(",");
+		KeyListener listener = new keyboardListener(keyStr);
 		addKeyListener(listener);
 		setFocusable(true);
 
@@ -41,8 +44,7 @@ public class GameInput extends JPanel{
     //this is the key boardlistener for manhole game
     private class keyboardListener implements KeyListener {
         private char[] inputKey;
-        public keyboardListener(String inputStr){
-            String[] keyStr = inputStr.split(",");
+        public keyboardListener(String[] keyStr){
             inputKey = new char[keyStr.length];
             for(int i=0; i != keyStr.length; i++){
                 inputKey[i] = Character.toUpperCase(keyStr[i].charAt(0));
@@ -54,10 +56,9 @@ public class GameInput extends JPanel{
         @Override
         public void keyPressed(KeyEvent e) {
             //set default input as 0
-            model.setInput(0);
             for(int i=0; i!=inputKey.length; i++){
                 if( e.getKeyCode() == inputKey[i] ){
-                    model.setInput(i);
+                    model.setInput(i+1);
                     break;
                 }
             }

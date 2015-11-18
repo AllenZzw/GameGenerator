@@ -233,6 +233,7 @@ public class GameConfig extends JFrame {
             public void actionPerformed(ActionEvent e) {
             	argparse();
                 GameInterface view = new GameInterface(pngField.getText(), avatarField.getText(), aniField.getText(), missField.getText());
+                System.out.println("Generating the game engine...");
                 try{
                     Process p = Runtime.getRuntime().exec("./stcsp -s " + nameField.getText() + ".csp");
                     p.waitFor();
@@ -241,6 +242,7 @@ public class GameConfig extends JFrame {
                     System.out.println("Unsucessful generate solutions.dot file");
                     System.exit(-1);
                 }
+                System.out.println("Game engine generation done!");
                 Automaton model = new Automaton("solutions.dot");
                 GameInput controller = new GameInput(inputField.getText());
 

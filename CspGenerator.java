@@ -137,7 +137,7 @@ public class CspGenerator{
 
 	private void writeVars(){
 		//Game general variables
-		cspStr += "var Input : [ 0, "+(this.controlType=="1-1 step"?this.inputKey.length:this.inputKey.length-1)+" ];\n";
+		cspStr += "var Input : [ 0, "+this.inputKey.length+" ];\n";
 		cspStr += "var Life : [ 0, "+this.lifeNum+" ];\n";
 		cspStr += "var Score : [ 0, 1 ];\n";
 		cspStr += "var Gametick : [ 0, "+(this.gameTick-1)+" ];\n";
@@ -232,7 +232,7 @@ public class CspGenerator{
 			}
 			if(aniTrace[i] == 1){
 				for(int j=0; j != aniStep[i]; j++){
-					cspStr += "Ani"+i+"Seq"+j+" == (Ani"+i+" ge "+(j+1)+") and (Ani"+i+" le "+(aniStep[i]-1-j)+");\n";
+					cspStr += "Ani"+i+"Seq"+j+" == (Ani"+i+" ge "+(j+1)+") and (Ani"+i+" le "+(aniStep[i]*2-1-j)+");\n";
 				}
 			}
 		}
@@ -271,12 +271,12 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//setting avatar variable
-		cspStr += "next Avatar == if GameOver then Avatar else ";
+		cspStr += "next Avatar == if GameOver or Input eq 0 then Avatar else ";
 		if(this.missTrigger == "Reset Avatar"){
 			cspStr += "if Miss eq 1 then 0 else ";
 		}
 		if(this.controlType == "1-1 location"){
-			cspStr += "Input;\n";
+			cspStr += "(Input-1);\n";
 		}
 		else if( this.controlType == "1-1 step"){
 			//0 for no input and 1 input for left and 2 input for right
