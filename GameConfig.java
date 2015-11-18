@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.lang.Process;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -65,7 +66,7 @@ public class GameConfig extends JFrame {
     	configPos.gridwidth = 4;
         configPos.gridx = 1;
         configPos.gridy = 0;
-        nameField = new JTextField("Octopus",10);
+        nameField = new JTextField("Manhole",10);
         nameField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(nameField, configPos);
 
@@ -78,7 +79,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 4;
         configPos.gridx = 1;
         configPos.gridy = 1;
-        inputField = new JTextField(10);
+        inputField = new JTextField("Q,P,Z,M",10);
         inputField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(inputField, configPos);
 
@@ -91,7 +92,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 4;
         configPos.gridx = 1;
         configPos.gridy = 2;
-        avatarField = new JTextField("1,0,0,0,0,0");
+        avatarField = new JTextField("1,0,0,0");
         avatarField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(avatarField,configPos);
 
@@ -117,7 +118,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 4;
-        aniField = new JTextField("3,1;4,1;5,1;4,1;3,1");
+        aniField = new JTextField("16,0");
         aniField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(aniField,configPos);
 
@@ -130,7 +131,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 5;
-        levelField = new JTextField(2);
+        levelField = new JTextField("10,20,30",10);
         levelField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(levelField,configPos);
 
@@ -143,7 +144,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 6;
-        tickField = new JTextField(2);
+        tickField = new JTextField("5",2);
         tickField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(tickField,configPos);
 
@@ -156,7 +157,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 7;
-        lifeField = new JTextField(2);
+        lifeField = new JTextField("3",2);
         lifeField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(lifeField,configPos);
 
@@ -188,7 +189,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 9;
-        missField = new JTextField("1,0,2;2,1,3;3,2,4;4,3,3");
+        missField = new JTextField("0,0,2;1,0,5;2,0,13;3,0,10");
         missField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(missField,configPos);
 
@@ -220,7 +221,7 @@ public class GameConfig extends JFrame {
         configPos.gridwidth = 3;
         configPos.gridx = 1;
         configPos.gridy = 11;
-        pngField = new JTextField("/res/octopus_res");
+        pngField = new JTextField("/imgresource/manhole/");
         pngField.setHorizontalAlignment(JTextField.RIGHT);
         configPanel.add(pngField,configPos);
 
@@ -232,6 +233,14 @@ public class GameConfig extends JFrame {
             public void actionPerformed(ActionEvent e) {
             	argparse();
                 GameInterface view = new GameInterface(pngField.getText(), avatarField.getText(), aniField.getText(), missField.getText());
+                try{
+                    Process p = Runtime.getRuntime().exec("./stcsp -s " + nameField.getText() + ".csp");
+                    p.waitFor();
+                }
+                catch(Exception processexception){
+                    System.out.println("Unsucessful generate solutions.dot file");
+                    System.exit(-1);
+                }
                 Automaton model = new Automaton("solutions.dot");
                 GameInput controller = new GameInput(inputField.getText());
 

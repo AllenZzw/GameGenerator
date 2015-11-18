@@ -271,7 +271,7 @@ public class CspGenerator{
 		cspStr += "\n";
 
 		//setting avatar variable
-		cspStr += "next Avatar == ";
+		cspStr += "next Avatar == if GameOver then Avatar else ";
 		if(this.missTrigger == "Reset Avatar"){
 			cspStr += "if Miss eq 1 then 0 else ";
 		}
@@ -295,7 +295,7 @@ public class CspGenerator{
 						missLocStr.add("MissLoc"+j);
 					}
 				}
-				cspStr += "if ("+String.join(" or ", missLocStr) + ") then 0 else ";
+				cspStr += "if ("+String.join(" or ", missLocStr) + ") or GameOver then 0 else ";
 			}
 
 			if(aniTrace[i] == 0){
@@ -314,10 +314,10 @@ public class CspGenerator{
 			cspStr += "Score == (Ava"+this.scoreLoc+" eq 1) and (Gametick eq 0);\n";
 		}
 		if(this.scoreType == "Not Miss"){
-			cspStr += "Score == if Gametick ne 0 then 0 else ";
+			cspStr += "Score == if Gametick ne 0 then 0 else ( ";
 			if(this.missType == "positive"){
 				for(int i=0; i!= missAvaLoc.length; i++){
-					cspStr += "( (Ava"+missAvaLoc[i]+" eq 0) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1) )";
+					cspStr += "( Ava"+missAvaLoc[i]+" eq 0 and Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1 )";
 					if(i != missAvaLoc.length - 1){
 						cspStr += " or ";
 					}
@@ -328,12 +328,12 @@ public class CspGenerator{
 			}
 			if(this.missType == "negative"){
 				for(int i=0; i!= missAvaLoc.length; i++){
-					cspStr += "( (Ava"+missAvaLoc[i]+" eq 1) and (Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1) )";
+					cspStr += "( Ava"+missAvaLoc[i]+" eq 1 and Ani"+missAniNum[i]+"Seq"+missAniSeq[i]+" eq 1 )";
 					if(i != missAvaLoc.length - 1){
 						cspStr += " or ";
 					}
 					else{
-						cspStr += ";\n";
+						cspStr += " );\n";
 					}
 				}
 			}

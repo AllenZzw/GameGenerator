@@ -24,6 +24,12 @@ public class GameInterface extends JFrame {
 	private JLabel[] missDisplay;
 	private int[] missAniStep;
 
+	private JLabel scoreLabel;
+	private JLabel lifeLabel;
+	private JLabel levelLabel;
+
+	private int score = 0;
+
 	private GameInput controller;
 
 	public GameInterface(String imgPath, String avaStr, String aniStr, String missStr){
@@ -77,6 +83,7 @@ public class GameInterface extends JFrame {
 	private void initLayout(){
 		//associate images with JLabel
 		//setting the position of background image
+		//setting the display panel 
 		JPanel displayPanel = new JPanel(new GridBagLayout());
 		displayPanel.setBackground(new Color(0xFF, 0xFF, 0xFF));
 		GridBagConstraints position = new GridBagConstraints();
@@ -87,7 +94,7 @@ public class GameInterface extends JFrame {
 
 		avaDisplay = new JLabel[imgAvaLocation.length];
 		for(int i = 0; i != avaDisplay.length; i++){
-			avaDisplay[i] = new JLabel(imgAvaLocation[i]);
+			avaDisplay[i] = new JLabel(imgBlank);
 			displayPanel.add(avaDisplay[i], position);
 		}
 
@@ -95,14 +102,14 @@ public class GameInterface extends JFrame {
 		for(int i = 0; i != imgAnimation.length; i++){
 			aniDisplay[i] = new JLabel[imgAnimation[i].length];
 			for(int j = 0; j != imgAnimation[i].length; j++){
-				aniDisplay[i][j] = new JLabel(imgAnimation[i][j]);
+				aniDisplay[i][j] = new JLabel(imgBlank);
 				displayPanel.add(aniDisplay[i][j], position);
 			}
 		}
 
 		missDisplay = new JLabel[imgMiss.length];
 		for(int i=0; i!=imgMiss.length; i++){
-			missDisplay[i] = new JLabel(imgMiss[i]);
+			missDisplay[i] = new JLabel(imgBlank);
 			displayPanel.add(missDisplay[i],position);
 		}
 		missAniStep = new int[imgMiss.length];
@@ -110,6 +117,25 @@ public class GameInterface extends JFrame {
 		bgDisplay = new JLabel(imgBackground);
 		displayPanel.add(bgDisplay, position);
 
+		//setting the state panel
+		JPanel statePanel = new JPanel(new GridBagLayout());
+		statePanel.setBackground(new Color(0xFF, 0xFF, 0xFF));
+		scoreLabel = new JLabel("Score :  ");
+		lifeLabel = new JLabel("Life :  ");
+		levelLabel = new JLabel("Level :  ");
+		position.gridwidth = 10;
+		position.gridx = 0;
+		position.gridy = 0;
+		scoreLabel.setHorizontalAlignment(JLabel.LEFT);
+		statePanel.add(scoreLabel, position);
+		position.gridx = 10;
+		lifeLabel.setHorizontalAlignment(JLabel.CENTER);
+		statePanel.add(lifeLabel,position);
+		position.gridx = 20;
+		levelLabel.setHorizontalAlignment(JLabel.RIGHT);
+		statePanel.add(levelLabel,position);
+
+		getContentPane().add(statePanel, BorderLayout.NORTH);
 		getContentPane().add(displayPanel, BorderLayout.CENTER);
 		this.setLocation(300,300);
 		this.setSize((int)(windowWidth * 1.2), (int)(windowHeight * 1.2));
@@ -122,7 +148,7 @@ public class GameInterface extends JFrame {
 		//update avatar location
 		for(int i = 0; i != avaDisplay.length; i++ ){
 			String varName = new String("Ava"+i);
-			if(currentVarMap.get(varName) == 0 || gameover)
+			if(currentVarMap.get(varName) == 0 )
 				avaDisplay[i].setIcon(imgBlank);
 			else
 				avaDisplay[i].setIcon(imgAvaLocation[i]);
@@ -133,7 +159,7 @@ public class GameInterface extends JFrame {
 			for(int i = 0; i != aniDisplay.length; i++ ){
 				for(int j = 0; j != aniDisplay[i].length; j++ ){
 					String varName = new String("Ani"+i+"Seq"+j);
-					if(currentVarMap.get(varName) == 0 || gameover)
+					if(currentVarMap.get(varName) == 0 )
 						aniDisplay[i][j].setIcon(imgBlank);
 					else{
 						aniDisplay[i][j].setIcon(imgAnimation[i][j]);
@@ -160,6 +186,14 @@ public class GameInterface extends JFrame {
 				}
 			}
 		}
+
+		//update game state
+		if(currentVarMap.get("Score") == 1){
+			this.score += 1;
+		}
+		scoreLabel.setText("Score : "+this.score+" ");
+		lifeLabel.setText("Life : "+currentVarMap.get("Life")+" ");
+		levelLabel.setText("Level : "+currentVarMap.get("Level")+" ");
 	}
 
 	public void setController(GameInput controller){
